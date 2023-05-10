@@ -1,0 +1,32 @@
+---
+- name: Install Python and Nginx
+  hosts: all
+  become: true
+  gather_facts: true
+  
+  tasks:
+    - name: Install Python
+      ansible.builtin.raw: apt-get update && apt-get -y install python
+
+    - name: Install Nginx
+      ansible.builtin.raw: apt-get update && apt-get -y install nginx
+
+    - name: Start Nginx service
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Create Nginx configuration file
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: Restart Nginx
+
+    - name: Get Nginx version
+      ansible.builtin.raw: nginx -v
+      register: nginx_version
+
+    - name: Display Nginx version
+      ansible.builtin.debug:
+        var: nginx_version.stdout
